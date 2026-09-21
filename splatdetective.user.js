@@ -8,6 +8,7 @@
 // @grant        none
 // @run-at       document-idle
 // @noframes
+// @license      GPL-3.0
 // ==/UserScript==
 
 (function () {
