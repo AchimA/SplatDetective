@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         SplatDetective
-// @namespace    https://github.com/
+// @namespace    https://github.com/BsIngA/SplatDetective
 // @version      1.0.0
 // @description  Blurs scene titles/descriptions on superspl.at until you choose to reveal them.
-// @author       SplatDetective
+// @author       BsIngA
 // @match        https://superspl.at/*
 // @grant        none
 // @run-at       document-idle
