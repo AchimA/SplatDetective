@@ -7,20 +7,26 @@
 // @match        https://superspl.at/*
 // @grant        none
 // @run-at       document-idle
+// @noframes
 // ==/UserScript==
 
 (function () {
   "use strict";
 
-  // Elements that give away the answer: scene heading, its description, and each grid card's title link.
+  // Never run inside iframes (e.g. the embedded 3D viewport) to avoid injecting duplicate buttons.
+  if (window.top !== window.self) return;
+
+  // Elements that give away the answer: scene heading, its description, comments, and each grid card's title link.
   const BLUR_SELECTOR = [
     "main h1",
     "main p.whitespace-pre-wrap",
-    "a.font-medium.text-sm.truncate"
+    "a.font-medium.text-sm.truncate",
+    "div.text-sm.whitespace-pre-wrap"
   ].join(", ");
 
   const STYLE_ID = "splatdetective-style";
   const TOGGLE_ID = "splatdetective-toggle";
+  const SHUFFLE_ID = "splatdetective-shuffle";
   const BLUR_CLASS = "splatdetective-blur";
 
   function injectStyle() {
@@ -38,19 +44,32 @@
         filter: none;
       }
 
-      #${TOGGLE_ID} {
+      #${TOGGLE_ID},
+      #${SHUFFLE_ID} {
         position: fixed;
-        top: 12px;
         right: 12px;
         z-index: 2147483647;
         border: 0;
         border-radius: 8px;
-        background: #00b566;
         color: #fff;
-        font: 600 13px/1.2 Inter, system-ui, -apple-system, sans-serif;
+        font: 600 18px/1.2 Inter, system-ui, -apple-system, sans-serif;
         padding: 8px 12px;
         cursor: pointer;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+      }
+
+      #${SHUFFLE_ID} {
+        bottom: 52px;
+        background: #2f6feb;
+      }
+
+      #${SHUFFLE_ID}:hover {
+        background: #2760c9;
+      }
+
+      #${TOGGLE_ID} {
+        bottom: 12px;
+        background: #00b566;
       }
 
       #${TOGGLE_ID}:hover {
@@ -66,10 +85,10 @@
     const button = document.createElement("button");
     button.id = TOGGLE_ID;
     button.type = "button";
-    button.textContent = "Reveal details";
+    button.textContent = "🔓 Reveal details";
     button.addEventListener("click", () => {
       const revealed = document.body.classList.toggle("splatdetective-revealed");
-      button.textContent = revealed ? "Hide details" : "Reveal details";
+      button.textContent = revealed ? "🔒 Hide details" : "🔓 Reveal details";
     });
     document.body.appendChild(button);
   }
@@ -78,9 +97,30 @@
     document.querySelectorAll(BLUR_SELECTOR).forEach((el) => el.classList.add(BLUR_CLASS));
   }
 
+  function getSceneLinks() {
+    const hrefs = Array.from(document.querySelectorAll('a[href^="/scene/"]')).map((a) => a.getAttribute("href"));
+    return [...new Set(hrefs)];
+  }
+
+  function injectShuffle() {
+    if (document.getElementById(SHUFFLE_ID)) return;
+
+    const button = document.createElement("button");
+    button.id = SHUFFLE_ID;
+    button.type = "button";
+    button.textContent = "Shuffle";
+    button.addEventListener("click", () => {
+      const links = getSceneLinks().filter((href) => href !== window.location.pathname);
+      if (!links.length) return;
+      window.location.href = links[Math.floor(Math.random() * links.length)];
+    });
+    document.body.appendChild(button);
+  }
+
   function init() {
     injectStyle();
     injectToggle();
+    injectShuffle();
     applyBlur();
   }
 
