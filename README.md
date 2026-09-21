@@ -1,7 +1,7 @@
 # SplatDetective
 A geodetective-like wrapper for superspl.at.
 
-## Userscript (recommended)
+## Userscript
 [splatdetective.user.js](splatdetective.user.js) is a [Tampermonkey](https://www.tampermonkey.net/)
 script that runs directly on superspl.at and blurs the real title, description, and grid card-title
 elements in place. Because it runs same-origin instead of overlaying a cross-origin iframe, scrolling
