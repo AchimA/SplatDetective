@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SplatDetective</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --panel-bg: rgba(15, 15, 20, 0.72);
+      --panel-border: rgba(255, 255, 255, 0.18);
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: #0f0f14;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+    }
+
+    #controls {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      z-index: 30;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    #toggle {
+      border: 0;
+      border-radius: 8px;
+      background: #00b566;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+
+    #toggle:hover { background: #00a45d; }
+
+    #target {
+      max-width: 36vw;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 12px;
+      opacity: 0.92;
+    }
+
+    #mask-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .blur-mask {
+      position: absolute;
+      border-radius: 10px;
+      background: rgba(20, 20, 25, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: opacity 0.2s ease;
+      box-shadow: 0 2px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    body.revealed .blur-mask {
+      opacity: 0;
+    }
+
+    .overview-mask,
+    .scene-mask { display: none; }
+
+    body.mode-overview .overview-mask,
+    body.mode-scene .scene-mask { display: block; }
+
+    /* rough superspl.at text zones in list view */
+    #overview-title {
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(760px, 78vw);
+      height: 58px;
+    }
+
+    #overview-card {
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(760px, 80vw);
+      height: 120px;
+    }
+
+    /* rough superspl.at text zones in scene view */
+    #scene-title {
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(780px, 80vw);
+      height: 58px;
+    }
+
+    #scene-description {
+      bottom: 20px;
+      left: 20px;
+      width: min(520px, 62vw);
+      height: 136px;
+    }
+  </style>
+</head>
+<body>
+  <iframe id="supersplat" referrerpolicy="no-referrer" title="SuperSplat"></iframe>
+
+  <div id="mask-layer" aria-hidden="true">
+    <div id="overview-title" class="blur-mask overview-mask"></div>
+    <div id="overview-card" class="blur-mask overview-mask"></div>
+
+    <div id="scene-title" class="blur-mask scene-mask"></div>
+    <div id="scene-description" class="blur-mask scene-mask"></div>
+  </div>
+
+  <div id="controls">
+    <button id="toggle" type="button" aria-pressed="false">Reveal details</button>
+    <span id="target"></span>
+  </div>
+
+  <script>
+    const DEFAULT_TARGET = "https://superspl.at/";
+
+    function resolveTarget() {
+      const params = new URLSearchParams(window.location.search);
+      const raw = params.get("url") || DEFAULT_TARGET;
+
+      try {
+        const parsed = new URL(raw);
+        if (parsed.protocol === "https:" && parsed.hostname === "superspl.at") {
+          return parsed.toString();
+        }
+      } catch (_err) {
+        // Fall through to default target.
+      }
+
+      return DEFAULT_TARGET;
+    }
+
+    const target = resolveTarget();
+    const iframe = document.getElementById("supersplat");
+    const targetLabel = document.getElementById("target");
+    const toggle = document.getElementById("toggle");
+
+    iframe.src = target;
+    targetLabel.textContent = target;
+
+    const isScene = new URL(target).pathname.startsWith("/scene/");
+    document.body.classList.add(isScene ? "mode-scene" : "mode-overview");
+
+    toggle.addEventListener("click", () => {
+      const revealed = document.body.classList.toggle("revealed");
+      toggle.textContent = revealed ? "Hide details" : "Reveal details";
+      toggle.setAttribute("aria-pressed", String(revealed));
+    });
+  </script>
+</body>
+</html>
